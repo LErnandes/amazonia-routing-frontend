@@ -1,7 +1,47 @@
 <template>
   <v-container>
-    <v-row justify="space-around">
-      <v-card width="400">
+    <v-form v-model="valid">
+      <v-container>
+        <v-row class="mt-5">
+          <v-col cols="12" md="4">
+            <v-text-field
+              v-model="start"
+              :rules="posRules"
+              label="Start"
+              @keyup="uppercase"
+              required
+            ></v-text-field>
+          </v-col>
+
+          <v-col cols="12" md="4">
+            <v-text-field
+              v-model="object"
+              :rules="posRules"
+              label="Object"
+              @keyup="uppercase"
+              required
+            ></v-text-field>
+          </v-col>
+
+          <v-col cols="12" md="4">
+            <v-text-field
+              v-model="end"
+              :rules="posRules"
+              label="End"
+              @keyup="uppercase"
+              required
+            ></v-text-field>
+          </v-col>
+        </v-row>
+
+        <v-row justify="center">
+          <v-btn @click="getPath" :disabled="!valid">Submit</v-btn>
+        </v-row>
+      </v-container>
+    </v-form>
+
+    <v-row class="mt-15" justify="space-around" v-if="currentPath">
+      <v-card width="800">
         <v-card-title>
           {{ currentPath.title }}
         </v-card-title>
@@ -43,36 +83,44 @@ export default {
   methods: {
     async getPath() {
       if (this.currentPath != null) {
-        this.paths.push(this.currentPath);
+        this.paths.unshift(this.currentPath);
       }
 
-      this.currentPath = await ApiService.getPath();
+      this.currentPath = await ApiService.getPath(this.start, this.object, this.end);
     },
+    uppercase() {
+      this.start = this.start.toUpperCase();
+      this.object = this.object.toUpperCase();
+      this.end = this.end.toUpperCase();
+    }
   },
 
   data: () => ({
-    currentPath: {
-        id: 1,
-        time: 220.17,
-        path: {
-          toObject: ["A1", "B1", "C1", "C2", "C3", "D3", "E3", "F3", "F4"],
-          toEnd: ["F4", "E4", "D4", "C4", "B4", "A4"],
-        },
-        title: "BLA BLA",
-        subtitle: "BLA BLA BLA BLA BLA BLA BLA"
+    posRules: [
+      (value) => {
+        if (value) return true;
+
+        return "Field is requred.";
       },
-    paths: [
-      {
-        id: 1,
-        time: 220.17,
-        path: {
-          toObject: ["A1", "B1", "C1", "C2", "C3", "D3", "E3", "F3", "F4"],
-          toEnd: ["F4", "E4", "D4", "C4", "B4", "A4"],
-        },
-        title: "BLA BLA",
-        subtitle: "BLA BLA BLA BLA BLA BLA BLA"
-      }
+      (value) => {
+        if (value?.length <= 2) return true;
+
+        return "Field must be less than 2 characters.";
+      },
+      (value) => {
+        if (["A", "B", "C", "D", "E", "F", "G", "H"].includes(value[0]) && ["A", "B", "C", "D", "E", "F", "G", "H"].includes(value[0])) return true;
+
+        return "Field must be in .";
+      },
     ],
+    
+    valid: false,
+    start: "",
+    object: "",
+    end: "",
+
+    currentPath: null,
+    paths: [],
   }),
 };
 </script>
